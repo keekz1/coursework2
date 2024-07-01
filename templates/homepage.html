@@ -1,0 +1,10 @@
+{% extends "base.html" %} {% load static %}
+<link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+{% block ImageBackground %}
+
+<br /><br />
+{% endblock ImageBackground %} {% block content %}
+<div id="main">
+  <div class="ItemFrame">{% include 'index.html' %}</div>
+</div>
+{% endblock content %}

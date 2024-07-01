@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="location" content="" />
+    <meta name="author" content="" />
+    <title>Cards Css</title>
+    <!-- Bootstrap icons-->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+
+        @media (min-width: 576px) {
+          .col {
+            flex: 0 0 50%; /
+          }
+        }
+        @media (min-width: 768px) {
+          .col {
+            flex: 0 0 33.333333%;
+          }
+        }
+        @media (min-width: 992px) {
+          .col {
+            flex: 0 0 25%;
+          }
+        }
+       .col {
+        margin-bottom: 2rem;
+      }
+
+        .card {
+          height: 100%;
+        }
+
+        .card-body {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .product-details {
+          flex-grow: 1;
+        }
+
+        .product-details h5 {
+          font-size: 1rem;
+        }
+
+        .product-details .audit,
+        .product-details .location {
+          font-size: 0.85rem;
+        }
+
+
+        .card-footer {
+          margin-top: 0;
+        }
+        .product-details h5 {
+          font-size: 1rem;
+        }
+        .product-details .audit,
+        .product-details .location{
+          font-size: 0.85rem;
+        }
+    </style>
+  </head>
+  <body>
+    <section class="py-5">
+      <div class="container px-4 px-lg-5 mt-5">
+        <div
+          class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center"
+        >
+          {% for item in items %}
+          <div class="col">
+            <div class="card">
+              {% if item.image %}
+              <img
+                class="card-img-top"
+                src="{{ item.image.url }}"
+                alt="Product Image"
+              />
+              {% else %}
+              <div class="card-img-top text-center">No image available</div>
+              {% endif %}
+              <div class="card-body">
+                <div class="text-center product-details">
+                  <h5 class="fw-bolder">{{ item.name }}</h5>
+                  <p class="mb-0 audit">{{ item.audit }}</p>
+                  <p class="location">{{ item.location }}</p>
+                </div>
+              </div>
+              <div class="card-footer border-top-0 bg-transparent">
+                <div class="text-center">
+                  <a
+                    class="btn btn-outline-dark"
+                    href="{% url 'item' item.id %}"
+                    >View Info</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

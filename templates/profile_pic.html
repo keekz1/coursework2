@@ -1,0 +1,68 @@
+<style>
+  .profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 3px solid yellow;
+    display: block;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .profile-pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  #profile-pic-input {
+    display: none;
+  }
+</style>
+
+<form method="post" enctype="multipart/form-data" id="profile-pic-form">
+  {% csrf_token %} {{ form.as_p }}
+  <label for="profile-pic-input" class="profile-pic">
+    {% if user.profile_image %}
+    <img
+      id="profile-pic-preview"
+      src="{{ user.profile_image.url }}"
+      alt="Profile Picture Preview"
+    />
+    {% else %}
+    <img
+      id="profile-pic-preview"
+      src="https://via.placeholder.com/150"
+      alt="Placeholder Profile Picture"
+    />
+    {% endif %}
+  </label>
+  <input
+    type="file"
+    id="profile-pic-input"
+    name="profile-pic-input"
+    accept="image/*"
+    onchange="previewImage(event)"
+  />
+  <button type="submit">Save Profile Picture</button>
+</form>
+
+<script>
+  function previewImage(event) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var output = document.getElementById("profile-pic-preview");
+      output.src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+
+  document
+    .getElementById("profile-pic-input")
+    .addEventListener("change", function (event) {
+      event.preventDefault();
+      return false;
+    });
+</script>

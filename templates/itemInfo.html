@@ -1,0 +1,143 @@
+{% extends "base.html" %} {% load static %} {% block MenuPullout %}
+<div><a href="{% url 'home' %}" class="navbar-button">Home</a></div>
+<div><a href="{% url 'profile' %}" class="navbar-button">Profile</a></div>
+<div>
+  <a href="{% url 'cart-summary' %}" class="navbar-button" id="cart_link">
+    Cart{% if cart_quantity > 0 %} ({{ cart_quantity }}){% endif %}
+  </a>
+</div>
+<div><a href="#" class="navbar-button" target="iframe_a">Search</a></div>
+<div><a href="#" class="navbar-button">Settings</a></div>
+<div><a href="{% url 'logout' %}" class="navbar-button">Logout</a></div>
+{% endblock MenuPullout %} {% block ImageBackground %}
+<div class="backgroundImage">
+  <img src="{% static 'img/background.PNG' %}" id="background" />
+</div>
+{% endblock ImageBackground %} {% block content %}
+<div class="container">
+  <br />
+  <div class="card mb-3">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img
+          src="{{ item.image.url }}"
+          class="img-fluid rounded-start"
+          alt="Item Image"
+        />
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h3 class="card-title">{{ item.name }}</h3>
+          <p class="card-text">{{ item.location|linebreaksbr }}</p>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <div class="card-body">
+          <h4>Product Type: {{ item.type }}</h4>
+          <h4>audit: {{ item.audit }}</h4>
+          {% if item.is_booked %}
+          <button
+            class="btn btn-primary btn-sm"
+            id="booked"
+            data-item-id="{{ item.id }}"
+          >
+            Item is booked
+          </button>
+          {% else %}
+          <button
+            class="btn btn-primary btn-sm"
+            id="add_cart"
+            data-item-id="{{ item.id }}"
+          >
+            Add to Cart
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    function updateCartQuantity() {
+      $.ajax({
+        url: "{% url 'cart-summary' %}",
+        dataType: "json",
+        success: function (data) {
+          var cartQuantity = data.cart_quantity;
+          $("#cart_link").text("Cart");
+          if (cartQuantity > 0) {
+            $("#cart_link").append(" (" + cartQuantity + ")");
+          }
+          $("#cart_quantity").text(cartQuantity);
+          if (cartQuantity === 0) {
+            $("#cart_quantity").hide();
+          } else {
+            $("#cart_quantity").show();
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          console.log(xhr.status + ": " + xhr.responseText);
+        },
+      });
+    }
+
+    // Initial call to update cart quantity
+    updateCartQuantity();
+
+    $(document).on("click", "#add_cart", function (e) {
+      e.preventDefault();
+      var item_id = $(this).data("item-id");
+      $.ajax({
+        type: "POST",
+        url: "{% url 'cart-add' %}",
+        data: {
+          item_id: item_id,
+          csrfmiddlewaretoken: "{{ csrf_token }}",
+          action: "post",
+        },
+        success: function (json) {
+          console.log(json);
+          if (json.error) {
+            alert(json.error);
+          } else {
+            updateCartQuantity();
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          console.log(xhr.status + ": " + xhr.responseText);
+        },
+      });
+    });
+
+    $(document).on("click", "#booked", function (e) {
+      e.preventDefault();
+      alert("This item is already booked.");
+      updateCartQuantity();
+    });
+
+    $(document).on("click", "#delete_cart", function (e) {
+      e.preventDefault();
+      var item_id = $(this).data("item-id");
+      $.ajax({
+        type: "POST",
+        url: "{% url 'cart-delete' %}",
+        data: {
+          item_id: item_id,
+          csrfmiddlewaretoken: "{{ csrf_token }}",
+          action: "post",
+        },
+        success: function (json) {
+          console.log(json); // Log the JSON response for debugging
+          updateCartQuantity(); // Update cart quantity badge
+        },
+        error: function (xhr, errmsg, err) {
+          console.log(xhr.status + ": " + xhr.responseText);
+        },
+      });
+    });
+  });
+</script>
+
+{% endblock content %}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Bookings</title>
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: white;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+      }
+      .item {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .item img {
+        max-width: 100px;
+        max-height: 100px;
+        margin-right: 10px;
+      }
+      .item .details {
+        display: flex;
+        align-items: center;
+      }
+      .item .details div {
+        margin-left: 10px;
+      }
+      .cancel-btn {
+        padding: 10px 20px;
+        background-color: red;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+      .cancel-btn:hover {
+        background-color: #c82333;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>My Bookings</h1>
+      {% if booked_items %} {% for item in booked_items %}
+      <div class="item">
+        <div class="details">
+          <img src="{{ item.image.url }}" alt="{{ item.name }}" />
+          <div>
+            <h3>{{ item.name }}</h3>
+            <p>{{ item.location }}</p>
+            <p>audit: {{ item.audit }}</p>
+            <p>Booked At: {{ item.booked_at }}</p>
+            <button class="cancel-btn" onclick="cancelBooking({{ item.id }})">
+              Cancel Booking
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <p>No booked items.</p>
+      {% endif %}
+    </div>
+
+    <script>
+      function cancelBooking(itemId) {
+        $.ajax({
+          type: "POST",
+          url: "{% url 'unbook-item' %}",
+          data: {
+            item_id: itemId,
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+          },
+          success: function (response) {
+            if (response.success) {
+              alert("Booking canceled successfully.");
+              location.reload();
+            } else {
+              alert("Failed to cancel booking: " + response.error);
+            }
+          },
+          error: function (xhr, errmsg, err) {
+            console.log("Error:", xhr.status + ": " + xhr.responseText);
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

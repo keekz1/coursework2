@@ -1,0 +1,150 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+<div id="main">
+  <div class="ItemFrame">
+    {% if cart_items %} {% for item in cart_items %}
+    <div class="container">
+      <br />
+      <div class="card mb-3" data-item-id="{{ item.id }}">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <img
+              src="{{ item.image.url }}"
+              class="img-fluid rounded-start"
+              alt="..."
+            />
+          </div>
+          <div class="col-md-8" style="max-width: 25vw">
+            <div class="card-body">
+              <h3 class="card-title">{{ item.name }}</h3>
+              {{ item.description|linebreaksbr }}
+            </div>
+          </div>
+          <div class="col-md-9" style="max-width: 20vw">
+            <div class="card-body">
+              <br /><br />
+              <h3 class="card-title">Product Type: {{ item.category }}</h3>
+              <br />
+              <h3 class="card-title">audit: {{ item.audit}}</h3>
+              <br />
+              {% if item.booked %}
+              <p class="text-danger">Item already booked</p>
+              <button
+                class="btn btn-danger delete-item"
+                data-item-id="{{ item.id }}"
+                {%
+                if
+                not
+                item.is_booked
+                %}
+                style="display: none"
+                {%
+                endif
+                %}
+              >
+                Remove
+              </button>
+              <script>
+                // Automatically trigger Remove button click if item is booked
+                $(document).ready(function () {
+                  $(".delete-item[data-item-id='{{ item.id }}']").trigger(
+                    "click"
+                  );
+                });
+              </script>
+              {% else %}
+              <button
+                class="btn btn-primary book-item"
+                data-item-id="{{ item.id }}"
+              >
+                Book
+              </button>
+              <button
+                class="btn btn-danger delete-item"
+                data-item-id="{{ item.id }}"
+              >
+                Remove
+              </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+    {% endfor %} {% else %}
+    <div id="empty-cart-message">
+      <p>Your cart is empty.</p>
+    </div>
+    {% endif %}
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Remove item from cart
+    $(document).on("click", ".delete-item", function (e) {
+      e.preventDefault();
+      var item_id = $(this).data("item-id");
+      var csrf_token = "{{ csrf_token }}";
+
+      $.ajax({
+        type: "POST",
+        url: '{% url "cart-delete" %}',
+        data: {
+          item_id: item_id,
+          csrfmiddlewaretoken: csrf_token,
+          action: "post",
+        },
+        success: function (json) {
+          $(e.target).closest(".card").parent().parent().remove();
+        },
+        error: function (xhr, errmsg, err) {
+          console.log(xhr.status + ": " + xhr.responseText);
+        },
+      });
+    });
+
+    $(document).on("click", ".book-item", function (e) {
+      e.preventDefault();
+      var item_id = $(this).data("item-id");
+      var csrf_token = "{{ csrf_token }}";
+
+      $.ajax({
+        type: "POST",
+        url: "{% url 'book-item' %}",
+        data: {
+          item_id: item_id,
+          csrfmiddlewaretoken: csrf_token,
+          action: "post",
+        },
+        dataType: "json",
+        success: function (json) {
+          if (json.success) {
+            alert("Item booked successfully.");
+
+            // Clear the cart
+            location.reload(); // Reload the page to reflect updated cart
+          } else {
+            // Handle case where item is already booked
+            if (json.error === "Item already booked.") {
+              alert("Item is already booked.");
+              // Remove the card from DOM
+              $(".card[data-item-id='" + item_id + "']")
+                .parent()
+                .parent()
+                .remove();
+            } else {
+              alert("Failed to book item.");
+            }
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          console.log("Error:", xhr.status + ": " + xhr.responseText);
+        },
+      });
+    });
+  });
+</script>
+{% endblock content %}
